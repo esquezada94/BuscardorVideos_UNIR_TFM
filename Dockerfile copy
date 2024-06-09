@@ -1,0 +1,31 @@
+# Imagen base con CUDA y Python
+FROM nvidia/cuda:11.8.0-runtime-ubuntu22.04  
+# Cambiamos a runtime para optimizar
+
+# Instalar dependencias del sistema y Python
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip git ffmpeg \
+    libgl1-mesa-glx  # Añadimos libgl1-mesa-glx
+
+RUN apt-get install -y cuda-toolkit-11-8
+
+# Configurar variables de entorno para CUDA
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+ENV LD_LIBRARY_PATH /usr/local/cuda/lib64:/usr/local/cuda/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
+# Establecer el directorio de trabajo
+WORKDIR /app
+
+# Copiar el archivo de requerimientos
+COPY requirements.txt .
+
+# Instalar las dependencias, incluyendo Whisper
+RUN pip3 install git+https://github.com/openai/whisper.git
+RUN pip3 install -r requirements.txt
+
+# Copiar el resto de tu aplicación
+COPY . .
+
+# Comando para ejecutar tu aplicación
+CMD ["python3", "app.py"]
