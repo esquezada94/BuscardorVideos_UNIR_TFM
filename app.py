@@ -1,7 +1,12 @@
 import os
 import whisper
 import torch
+import pymongo
 from moviepy.editor import VideoFileClip
+
+# Verificar si CUDA está disponible
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(device)
 
 def change_video_extension_to_mp3(video_file):
   """
@@ -34,8 +39,56 @@ def convert_video_to_audio(video_file, audio_file, end_time=600, bitrate="1600k"
         bitrate (str): Tasa de bits del audio de salida (por defecto, 1600 kbps).
     """
     video = VideoFileClip(video_file).subclip(0, end_time)  # Recorta el video hasta end_time
+    duration = video.duration  # Duración en segundos
+    size = video.size  # Tamaño en bytes (ancho, alto)
+
+    # Convertir tamaño a MB (opcional)
+    size_mb = (size[0] * size[1] * 3) / (1024 * 1024) 
     audio = video.audio
     audio.write_audiofile(audio_file, bitrate=bitrate)
+
+    return duration, size_mb
+
+# Cargar el modelo en el dispositivo adecuado (GPU o CPU)
+#tiny base small medium large
+model = whisper.load_model("tiny").to(device)
+
+def get_transcript(audio_file):
+    # Transcribir el audio, especificando el dispositivo
+    result = model.transcribe(audio_file)
+
+    # Imprimir el texto transcrito
+
+    list_transcriptions = []
+
+    for i in result['segments']:
+        list_transcriptions.append({
+            "Id": i['id'],
+            "StartTime": i['start'],
+            "EndTime": i['end'],
+            "Text": i['text']
+        })
+        print(i['id'], i['start'], i['end'], i['text'])
+    
+    return list_transcriptions
+
+def save_mongodb(data):
+    # Conexión al servidor MongoDB (reemplaza con tus datos)
+    client = pymongo.MongoClient("mongodb://localhost:27017/")  
+
+    # Nombre de la base de datos y colección
+    db_name = "Metadata"
+    collection_name = "Transcription"
+
+    # Obtener la base de datos y colección (se crea si no existe)
+    db = client[db_name]
+    collection = db.get_collection(collection_name)
+
+    # Insertar el documento
+    resultado = collection.insert_one(data)
+
+    # Imprimir el ID del documento insertado
+    print("Documento insertado con ID:", resultado.inserted_id)
 
 audios_list = []
 path_videos = 'Videos/'
@@ -46,25 +99,13 @@ for folder in folders:
         if '.mp3' not in file:
             video_file = f'{path_videos}{folder}/{file}'
             audio_file = change_video_extension_to_mp3(video_file)
-            convert_video_to_audio(video_file, audio_file)
+            duration, size_mb = convert_video_to_audio(video_file, audio_file)
             audios_list.append(audio_file)
-
-
-# Verificar si CUDA está disponible
-device = "cuda" if torch.cuda.is_available() else "cpu"
-print(device)
-
-# Cargar el modelo en el dispositivo adecuado (GPU o CPU)
-model = whisper.load_model("tiny").to(device)
-#tiny base small medium large
-
-# Ruta al archivo de audio que quieres transcribir
-audio_path = audios_list[0]
-
-# Transcribir el audio, especificando el dispositivo
-result = model.transcribe(audio_path)
-
-# Imprimir el texto transcrito
-
-for i in result['segments']:
-    print(i['id'], i['start'], i['end'], i['text'])
+            list_transcriptions = get_transcript(audio_file)
+            data_video = {
+                "FileName": file,
+                "Duration": duration,
+                "SizeMb": size_mb,
+                "Transcription": list_transcriptions
+            }
+            save_mongodb(data_video)

@@ -18,6 +18,7 @@ WORKDIR /app
 
 # Instalar las dependencias de tu proyecto (si las tienes)
 RUN pip3 install -r requirements.txt
+RUN pip install git+https://github.com/openai/whisper.git 
 
 # Comando para ejecutar tu código
 CMD ["python3", "app.py"] 
