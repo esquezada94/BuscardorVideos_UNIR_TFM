@@ -8,6 +8,17 @@ from moviepy.editor import VideoFileClip
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(device)
 
+# Conexión al servidor MongoDB (reemplaza con tus datos)
+client = pymongo.MongoClient("mongodb://localhost:27017/")  
+
+# Nombre de la base de datos y colección
+db_name = "Metadata"
+collection_name = "Transcription"
+
+# Obtener la base de datos y colección (se crea si no existe)
+db = client[db_name]
+collection = db.get_collection(collection_name)
+
 def change_video_extension_to_mp3(video_file):
   """
   Cambia la extensión de un archivo de video a .mp3, conservando el nombre base.
@@ -72,23 +83,26 @@ def get_transcript(audio_file):
     
     return list_transcriptions
 
-def save_mongodb(data):
-    # Conexión al servidor MongoDB (reemplaza con tus datos)
-    client = pymongo.MongoClient("mongodb://localhost:27017/")  
-
-    # Nombre de la base de datos y colección
-    db_name = "Metadata"
-    collection_name = "Transcription"
-
-    # Obtener la base de datos y colección (se crea si no existe)
-    db = client[db_name]
-    collection = db.get_collection(collection_name)
-
+def save_mongodb(collection, data):
     # Insertar el documento
     resultado = collection.insert_one(data)
 
     # Imprimir el ID del documento insertado
     print("Documento insertado con ID:", resultado.inserted_id)
+
+def query_mongodb(collection, filter):
+    cursor = collection.find(filter)
+    list_documents = []
+    # Iterar sobre los resultados e imprimirlos
+    for document in cursor:
+        list_documents.append(document)
+
+    return list_documents
+
+def delete_document(collection, filter):
+    result = collection.delete_many(filter)
+
+    return result.deleted_count
 
 audios_list = []
 path_videos = 'Videos/'
@@ -104,8 +118,14 @@ for folder in folders:
             list_transcriptions = get_transcript(audio_file)
             data_video = {
                 "FileName": file,
+                "FolderName": folder,
                 "Duration": duration,
                 "SizeMb": size_mb,
                 "Transcription": list_transcriptions
             }
-            save_mongodb(data_video)
+            filter = {
+                "FolderName": folder,
+                "FileName": file
+            }
+            delete_document(collection, filter)
+            save_mongodb(collection, data_video)
