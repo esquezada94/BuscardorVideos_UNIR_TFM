@@ -1,2 +1,5 @@
+pandas
 moviepy
 pymongo
+chromadb
+pysqlite3-binary
