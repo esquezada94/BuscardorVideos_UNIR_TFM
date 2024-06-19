@@ -2,3 +2,5 @@ tfm/
 .env
 env/
 Videos/
+Audios/
+databases/

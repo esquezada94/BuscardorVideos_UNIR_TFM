@@ -3,3 +3,4 @@ moviepy
 pymongo
 chromadb
 pysqlite3-binary
+git+https://github.com/openai/whisper.git 

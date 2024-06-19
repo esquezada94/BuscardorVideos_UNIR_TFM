@@ -28,10 +28,11 @@ def change_extension_video(video_file):
     # Divide la ruta del archivo en directorio, nombre base y extensión
     directory, file_name = os.path.split(video_file)
     base_name, extension = os.path.splitext(file_name)
-
+    directory = directory.replace('Videos','Audios')
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     # Construye la nueva ruta con la extensión .mp3
     audio_file = os.path.join(directory, base_name + ".mp3")
-    
     return audio_file
 
 def convert_video(video_file, audio_file, end_time=600, bitrate="1600k"):
@@ -44,9 +45,11 @@ def convert_video(video_file, audio_file, end_time=600, bitrate="1600k"):
         end_time (int): Tiempo en segundos en el que finalizar la conversión (por defecto, 10 minutos = 600 segundos).
         bitrate (str): Tasa de bits del audio de salida (por defecto, 1600 kbps).
     """
-    video = VideoFileClip(video_file).subclip(0, end_time)  # Recorta el video hasta end_time
+    video = VideoFileClip(video_file)
     duration = video.duration  # Duración en segundos
     size = video.size  # Tamaño en bytes (ancho, alto)
+    end_time = min(end_time, duration) # Ajustar end_time si es necesario
+    video = video.subclip(0, end_time)  # Recorta el video hasta end_time
 
     # Convertir tamaño a MB (opcional)
     size_mb = (size[0] * size[1] * 3) / (1024 * 1024) 
@@ -71,6 +74,6 @@ def transcript_video(model, audio_file):
             "EndTime": i['end'],
             "Text": i['text']
         })
-        print(i['id'], i['start'], i['end'], i['text'])
+        #print(i['id'], i['start'], i['end'], i['text'])
     
     return list_transcriptions

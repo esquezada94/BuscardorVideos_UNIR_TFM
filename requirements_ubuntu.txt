@@ -1,5 +1,20 @@
 sudo apt update
-sudo apt install -y mongodb ffmpeg
+sudo apt install -y ffmpeg
 
+wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+sudo apt-get install -f
+
+wget https://repo.mongodb.org/apt/ubuntu/dists/focal/mongodb-org/7.0/multiverse/binary-amd64/mongodb-org-server_7.0.11_amd64.deb
+sudo dpkg -i mongodb-org-server_7.0.11_amd64.deb
+sudo apt-get install -f
+
+wget https://downloads.mongodb.com/compass/mongosh-2.2.9-linux-x64.tgz
+tar -zxvf mongosh-2.2.9-linux-x64.tgz
+sudo mv mongosh-2.2.9-linux-x64/bin/mongosh /usr/local/bin/
+mongosh --version
+
+sudo systemctl start mongod
+sudo systemctl status mongod
 #use Metadata
 #db.createCollection("Transcription")
