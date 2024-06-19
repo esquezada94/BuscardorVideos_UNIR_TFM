@@ -49,7 +49,7 @@ def convert_video(video_file, audio_file, end_time=600, bitrate="1600k"):
     duration = video.duration  # Duración en segundos
     size = video.size  # Tamaño en bytes (ancho, alto)
     end_time = min(end_time, duration) # Ajustar end_time si es necesario
-    video = video.subclip(0, end_time)  # Recorta el video hasta end_time
+    #video = video.subclip(0, end_time)  # Recorta el video hasta end_time
 
     # Convertir tamaño a MB (opcional)
     size_mb = (size[0] * size[1] * 3) / (1024 * 1024) 

@@ -4,3 +4,8 @@ env/
 Videos/
 Audios/
 databases/
+*.deb
+*.tgz
+*.pyc
+__pycache__/
+mongosh-2.2.9-linux-x64/
