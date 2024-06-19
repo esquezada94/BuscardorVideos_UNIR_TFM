@@ -55,6 +55,7 @@ def convert_video(video_file, audio_file, end_time=600, bitrate="1600k"):
     size_mb = (size[0] * size[1] * 3) / (1024 * 1024) 
     audio = video.audio
     audio.write_audiofile(audio_file, bitrate=bitrate)
+    del video
 
     return duration, size_mb
 
