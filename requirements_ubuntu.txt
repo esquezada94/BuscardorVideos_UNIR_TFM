@@ -14,6 +14,14 @@ tar -zxvf mongosh-2.2.9-linux-x64.tgz
 sudo mv mongosh-2.2.9-linux-x64/bin/mongosh /usr/local/bin/
 mongosh --version
 
+wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.9.5.tgz
+tar -zxvf mongodb-database-tools-ubuntu2204-x86_64-100.9.5.tgz
+sudo mv mongodb-database-tools-ubuntu2204-x86_64-100.9.5/bin/mongodump /usr/local/bin/
+sudo mv mongodb-database-tools-ubuntu2204-x86_64-100.9.5/bin/mongorestore /usr/local/bin/
+sudo mv mongodb-database-tools-ubuntu2204-x86_64-100.9.5/bin/mongoimport /usr/local/bin/
+sudo mv mongodb-database-tools-ubuntu2204-x86_64-100.9.5/bin/mongoexport /usr/local/bin/
+mongodump --version
+
 sudo systemctl start mongod
 sudo systemctl status mongod
 #use Metadata

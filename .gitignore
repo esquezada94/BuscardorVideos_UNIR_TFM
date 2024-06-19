@@ -9,3 +9,4 @@ databases/
 *.pyc
 __pycache__/
 mongosh-2.2.9-linux-x64/
+mongodb-database-tools-ubuntu2204-x86_64-100.9.5/
