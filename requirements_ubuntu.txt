@@ -20,7 +20,13 @@ sudo mv mongodb-database-tools-ubuntu2204-x86_64-100.9.5/bin/mongodump /usr/loca
 sudo mv mongodb-database-tools-ubuntu2204-x86_64-100.9.5/bin/mongorestore /usr/local/bin/
 sudo mv mongodb-database-tools-ubuntu2204-x86_64-100.9.5/bin/mongoimport /usr/local/bin/
 sudo mv mongodb-database-tools-ubuntu2204-x86_64-100.9.5/bin/mongoexport /usr/local/bin/
+sudo mv mongodb-database-tools-ubuntu2204-x86_64-100.9.5/bin/mongofiles /usr/local/bin/
+sudo mv mongodb-database-tools-ubuntu2204-x86_64-100.9.5/bin/bsondump /usr/local/bin/
 mongodump --version
+
+
+bsondump dump/Metadata/Transcription.bson > dump/Metadata/Transcription.json
+mongoimport --db Metadata --collection Transcription --file dump/Metadata/Transcription.json
 
 sudo systemctl start mongod
 sudo systemctl status mongod
