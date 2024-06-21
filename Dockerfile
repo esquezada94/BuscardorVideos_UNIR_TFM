@@ -1,24 +1,18 @@
-# Imagen base con CUDA 11.8 y Ubuntu 20.04
-FROM nvidia/cuda:11.8.0-runtime-ubuntu20.04 
-# O la versión que hayas elegido
+# syntax=docker/dockerfile:1
 
-# Establecer la zona horaria (ejemplo para Quito)
-ENV TZ=America/Guayaquil
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-# Actualizar el sistema y instalar dependencias
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 python3-pip git ffmpeg
-
-# Copiar el código de tu proyecto
-COPY . /app
+FROM python:3.11
 
 # Establecer el directorio de trabajo
 WORKDIR /app
 
-# Instalar las dependencias de tu proyecto (si las tienes)
-RUN pip3 install -r requirements.txt
-RUN pip install git+https://github.com/openai/whisper.git 
+# Copiar los archivos de requisitos y la aplicación
+COPY requirements_app.txt requirements.txt
 
-# Comando para ejecutar tu código
-CMD ["python3", "app.py"] 
+# Instalar las dependencias de Python
+RUN pip install -r requirements.txt
+
+# Copiar el resto de los archivos de la aplicación
+COPY . /app
+
+# Establecer el comando por defecto para ejecutar la aplicación
+CMD ["flask", "run", "--host=0.0.0.0", "--reload"]

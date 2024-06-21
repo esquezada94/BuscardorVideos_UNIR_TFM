@@ -1,0 +1,5 @@
+flask
+openai
+pymongo
+chromadb
+flask-cors

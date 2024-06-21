@@ -1,3 +1,6 @@
 tfm/
 env/
 Videos/
+Audios/
+.venv/
+dump/

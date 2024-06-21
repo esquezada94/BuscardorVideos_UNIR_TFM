@@ -28,7 +28,7 @@ def search_chroma(collection, query, filters, top):
         query_texts = query,
         where = filters,
         n_results = top,
-        include=["embeddings", "metadatas", "documents"]
+        include=["embeddings", "metadatas", "documents", "distances"]
     )
     return results
 

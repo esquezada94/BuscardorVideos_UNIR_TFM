@@ -1,10 +1,9 @@
 services:
-  tu_app:
+  web:
     build: .
-    runtime: nvidia
+    ports:
+      - "5000:5000"
     volumes:
       - .:/app
-    devices:
-      - /dev/nvidia0:/dev/nvidia0
-      - /dev/nvidiactl:/dev/nvidiactl
-      - /dev/nvidia-uvm:/dev/nvidia-uvm
+    environment:
+      - FLASK_ENV=development  # Activa el modo de desarrollo
