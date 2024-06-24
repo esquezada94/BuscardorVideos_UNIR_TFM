@@ -1,5 +1,8 @@
+nltk
 flask
 openai
+pandas
 pymongo
 chromadb
 flask-cors
+sentence-transformers

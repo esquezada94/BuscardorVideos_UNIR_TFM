@@ -1,10 +1,9 @@
 import pymongo
 
-def init_mongodb(db_name, collection_name):
-    # Conexión al servidor MongoDB (reemplaza con tus datos)
-    client = pymongo.MongoClient("mongodb://host.docker.internal:27017/")  
+client = pymongo.MongoClient("mongodb://host.docker.internal:27017/", serverSelectionTimeoutMS=30000, socketTimeoutMS=None, connectTimeoutMS=30000)  
+#client = pymongo.MongoClient("mongodb://localhost:27017/", serverSelectionTimeoutMS=30000, socketTimeoutMS=None, connectTimeoutMS=30000)  
 
-    # Obtener la base de datos y colección (se crea si no existe)
+def init_mongodb(db_name, collection_name):
     db = client[db_name]
     collection = db.get_collection(collection_name)
 

@@ -1,8 +1,7 @@
 import chromadb
-from chromadb.api.types import Where
 
-def init_chroma(collection_name):
-    database_directory = f'./databases'
+def init_chroma(database_name, collection_name):
+    database_directory = f'./{database_name}'
     client_chroma = chromadb.PersistentClient(path=database_directory)
     collections = [i.name for i in client_chroma.list_collections()]
     if collection_name in collections:
@@ -15,21 +14,38 @@ def init_chroma(collection_name):
     print(f"Total de elementos en la colección: {total_count}")
     return collection
 
-def save_data_chroma(collection, list_ids, list_text, metadata):
-    collection.add(
-        documents = list_text,
-        metadatas = metadata,
-        ids = list_ids
-    )
+def save_data_chroma(collection, list_ids, list_text, list_embeddings, metadata):
+    if list_embeddings:
+        collection.add(
+            documents = list_text,
+            embeddings = list_embeddings,
+            metadatas = metadata,
+            ids = list_ids
+        )
+    else:
+        collection.add(
+            documents = list_text,
+            metadatas = metadata,
+            ids = list_ids
+        )
+    
     return collection.count()
 
-def search_chroma(collection, query, filters, top):
-    results = collection.query(
-        query_texts = query,
-        where = filters,
-        n_results = top,
-        include=["embeddings", "metadatas", "documents", "distances"]
-    )
+def search_chroma(collection, query_text, query_embedding, filters, top):
+    if query_text:
+        results = collection.query(
+            query_texts = query_text,
+            where = filters,
+            n_results = top,
+            include=["embeddings", "metadatas", "documents", "distances"]
+        )
+    else:
+        results = collection.query(
+            query_embeddings = query_embedding,
+            where = filters,
+            n_results = top,
+            include=["embeddings", "metadatas", "documents", "distances"]
+        )
     return results
 
 def delete_from_chroma(collection, filter: dict):

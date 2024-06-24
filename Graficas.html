@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Visualización de Datos de Video con Chart.js</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<style>
+.chart-container {
+  display: inline-block;
+  width: 350px; /* Ajusta el ancho según tus preferencias */
+  position: relative; /* Necesario para posicionar el texto central */
+  text-align: center; /* Centrar el texto dentro del contenedor */
+  margin: 20px; /* Añadir margen entre gráficos */
+}
+.center-text {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  text-align: center;
+  pointer-events: none; /* Asegura que el texto no interfiera con el gráfico */
+}
+.chart-title {
+  font-size: 18px;
+  margin: 0;
+}
+.chart-subtitle {
+  font-size: 14px;
+  margin: 0;
+}
+</style>
+</head>
+<body>
+
+<script>
+// Datos de ejemplo (reemplaza con tus datos reales)
+const data = [
+  {'FileId': '326445e8-85b5-413a-99c5-a408235a83c4', 'FileName': '135090.mp4', 'FolderName': 'Gobierno del Dato y Toma de Decisiones', 'TotalTranscriptionTime': 2875.5, 'Duration': 3018.52, 'SilenceTime': 143.01999999999998, 'AccumulatedTime': 88.0},
+  {'FileId': '60d232dc-6f9b-433e-a4f8-6d5e24830378', 'FileName': '131784.mp4', 'FolderName': 'Gobierno del Dato y Toma de Decisiones', 'TotalTranscriptionTime': 5410.0199999999995, 'Duration': 5612.52, 'SilenceTime': 202.5000000000009, 'AccumulatedTime': 17.0},
+  {'FileId': 'efab0c69-e5be-4eb1-b827-c7eeed2877c3', 'FileName': '143460.mp4', 'FolderName': 'Gobierno del Dato y Toma de Decisiones', 'TotalTranscriptionTime': 4907.0, 'Duration': 5469.6, 'SilenceTime': 562.6000000000004, 'AccumulatedTime': 24.0}
+];
+
+// Colores para los segmentos
+const colors = ["#990099", "#ff9900", "#00e600", "#6b486b"]; // Violeta, Naranja, Verde, Morado
+
+// Función para crear un gráfico circular
+function createPieChart(dataItem) {
+  // Crear un contenedor para el gráfico con el FileId como ID
+  const chartContainer = document.createElement('div');
+  chartContainer.id = dataItem.FileId; // Asignar el FileId como ID
+  chartContainer.classList.add('chart-container');
+  document.body.appendChild(chartContainer);
+
+  // Crear el canvas para el gráfico
+  const canvas = document.createElement('canvas');
+  chartContainer.appendChild(canvas);
+
+  // Crear el div para el texto central
+  const centerText = document.createElement('div');
+  centerText.classList.add('center-text');
+  centerText.innerHTML = `Duración:<br>${(dataItem.Duration / 60).toFixed(1)} min`;
+  chartContainer.appendChild(centerText);
+
+  // Datos para el gráfico circular (convertidos a minutos, excluyendo Duration)
+  const chartData = {
+    labels: ["Transcripción", "Silencio", "Relevancia"],
+    datasets: [{
+      data: [
+        (dataItem.TotalTranscriptionTime / 60).toFixed(1),
+        (dataItem.SilenceTime / 60).toFixed(1),
+        (dataItem.AccumulatedTime / 60).toFixed(1)
+      ],
+      backgroundColor: colors,
+      hoverOffset: 4
+    }]
+  };
+
+  // Opciones del gráfico
+  const chartOptions = {
+    plugins: {
+      legend: {
+        position: 'bottom'
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const label = context.label;
+            const value = context.formattedValue;
+            return `${label}: ${value} min`;
+          }
+        }
+      },
+      datalabels: {
+        formatter: (value, context) => {
+          return `${context.chart.data.labels[context.dataIndex]}: ${value} min`;
+        },
+        color: 'white'
+      }
+    }
+  };
+
+  // Crear el gráfico circular
+  new Chart(canvas, {
+    type: 'doughnut',
+    data: chartData,
+    options: chartOptions
+  });
+
+  // Título del gráfico (nombre de la carpeta y del archivo)
+  const subtitle = document.createElement('p');
+  subtitle.textContent = dataItem.FolderName;
+  subtitle.classList.add('chart-subtitle');
+  chartContainer.appendChild(subtitle);
+
+  const title = document.createElement('p');
+  title.textContent = dataItem.FileName;
+  title.classList.add('chart-title');
+  chartContainer.appendChild(title);
+};
+
+// Crear un gráfico para cada elemento de datos
+data.forEach(createPieChart);
+</script>
+
+</body>
+</html>

@@ -4,13 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscador de Videos</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
     <style>
-        body { background-color: #f2f2f2; }
-        .container { margin-top: 50px; }
-        #respuesta { overflow-y: auto; }
-        .seccion-respuesta { background-color: #fff; color: #333; padding: 15px; margin-bottom: 10px; }
-        h1 { color: #333; }
+        body { 
+            background-color: #f2f2f2; 
+        }
+        .container { 
+            margin-top: 50px; 
+        }
+        #respuesta { 
+            overflow-y: auto; 
+        }
+        .seccion-respuesta { 
+            background-color: #fff; 
+            color: #333; 
+            padding: 15px; 
+            margin-bottom: 10px; 
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start; /* Alinea los elementos al principio */
+            justify-content: flex-start; /* Distribuye espacio entre los elementos */
+            gap: 20px; /* Espacio entre los elementos */
+        }
+        h1 { 
+            color: #333; 
+        }
+        .chart-container {
+            display: inline-block;
+            width: 250px; /* Ajusta el ancho según tus preferencias */
+            position: relative; /* Necesario para posicionar el texto central */
+            text-align: center; /* Centrar el texto dentro del contenedor */
+            margin: 20px; /* Añadir margen entre gráficos */
+        }
+        .center-text {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10px;
+            text-align: center;
+            pointer-events: none; /* Asegura que el texto no interfiera con el gráfico */
+        }
+        .chart-title {
+            font-size: 18px;
+            margin: 0;
+        }
+        .chart-subtitle {
+            font-size: 14px;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -30,14 +74,17 @@
             <div class="seccion-respuesta" id="referencias">
                 <h4>Referencias:</h4>
                 <p></p>
-                <button id="reproducirVideo">Reproducir desde minuto X</button> 
             </div>
             <div class="seccion-respuesta" id="video">
                 <h4>Video:</h4>
-                <video width="320" height="240" controls>
+                <video width="400" height="300" id="video_src" controls>
                     <source src="" type="video/mp4"> 
                     Tu navegador no soporta la reproducción de video.
                 </video>
+                <div id="grafica-principal"></div>
+            </div>
+            <div id="videos_relacionados">
+                <h4>Otros resultados relacionados:</h4>
             </div>
             <div class="seccion-respuesta" id="keywords">
                 <h4>Keywords:</h4>
@@ -58,7 +105,8 @@
         const keywords = document.querySelector('#keywords p');
         const consumoTokens = document.querySelector('#consumo-tokens p');
         const video = document.querySelector('#video video');
-        const reproducirBtn = document.getElementById('reproducirVideo');
+        const videosRelacionados = document.getElementById('videos_relacionados');
+        //const video = document.getElementById('#video_src');
 
         enviarBtn.addEventListener('click', () => enviarPrompt());
         promptInput.addEventListener('keyup', (event) => {
@@ -77,26 +125,173 @@
             .then(response => response.json())
             .then(data => {
                 respuestaGpt.textContent = data.Response.UserResponse;
-                referencias.textContent = data.Response.References;
-                keywords.textContent = data.Response.Keywords;
+                referencias.textContent = data.Response.Reference;
+                keywords.textContent = data.Response.Keywords != '' ? data.Response.Keywords : "";
                 consumoTokens.textContent = `Total: ${data.UsageTotal}, Prompt: ${data.UsagePrompt}, Completion: ${data.UsageCompletion}`;
-                const videoSrc = data.Response.VideoName;
-                const pathVideo = '\\\\wsl.localhost\\Ubuntu-22.04\\home\\esquezada\\Tesis\\BuscardorVideos_UNIR_TFM\\Videos\\'
-                video.setAttribute('data-video-src', encodeURI(pathVideo + data.Response.SubjectName +'\\' +data.Response.VideoName));
-                console.log(pathVideo + data.Response.SubjectName +'\\' +data.Response.VideoName)
-                video.load(); // Recargar el video con la nueva fuente
-                reproducirBtn.textContent = `Reproducir desde minuto ${data.Response.SegundoInicio}`;
+                var pathVideo = '\\\\wsl.localhost\\Ubuntu-22.04\\home\\esquezada\\Tesis\\BuscardorVideos_UNIR_TFM\\Videos\\'
+                //video.setAttribute('data-video-src', encodeURI(pathVideo + data.Response.SubjectName +'\\' +data.Response.VideoName));
+                console.log(pathVideo + data.Response.SubjectName +'\\' + data.Response.VideoName)
+                if (data.Response.VideoName != '' || data.Response.VideoName != '-' || data.Response.VideoName != 'N/A'){
+                    video.src = pathVideo + data.Response.SubjectName +'\\' +data.Response.VideoName;
+                }
+                if (data.Response.SegundoInicio != '' || data.Response.SegundoInicio != '-' || data.Response.SegundoInicio != 'N/A'){
+                    video.currentTime = parseFloat(data.Response.SegundoInicio);
+                }
+
+                metrics = data.Metrics;
+                candidates = data.Candidates;
+
+                // Bsucar y eliminar el registro que chat gpt usó para responder
+                const index = metrics.findIndex(item => item.FolderName === data.Response.SubjectName && item.FileName === data.Response.VideoName);
+
+                if (index !== -1) {
+                    // Extraer los datos del registro que coincide
+                    const extractedData = metrics.splice(index, 1)[0];
+                    createPieChart(extractedData, 'grafica-principal')
+
+                    console.log('Datos extraídos:', extractedData);
+                } else {
+                    console.log('No se encontró ningún registro que coincida.');
+                }
+
+                //Sección para añadir contenido relacionado
+
+                for (var i in metrics){
+
+                    dataMetric = metrics[i]
+                    console.log(i)
+                    const index_relacionado = candidates.findIndex(item => item.Subject === dataMetric["FolderName"] && item.Video === dataMetric["FileName"]);
+
+                    // Crear un div contenedor para cada video y gráfico
+                    const videoContainer = document.createElement('div');
+                    videoContainer.classList.add('seccion-respuesta');
+
+                    // *** Crear el elemento de párrafo para el resumen
+                    const parrafo = document.createElement('p');
+                    parrafo.textContent = candidates[index_relacionado]['Resume'];
+                    videoContainer.appendChild(parrafo);
+
+                    // Crear el elemento de video
+                    const video = document.createElement('video');
+                    video.width = 400;
+                    video.height = 300;
+                    video.controls = true;
+                    video.currentTime = candidates[index_relacionado]['StartTimeSeconds']
+                    video.id = `video_src_${dataMetric["FileId"]}`; // Asignar un ID único
+
+                    // Crear la fuente de video
+                    const source = document.createElement('source');
+                    source.src = pathVideo + dataMetric["FolderName"] +'\\' + dataMetric["FileName"];
+                    source.type = 'video/mp4';
+
+                    // Agregar la fuente al video
+                    video.appendChild(source);
+
+                    // Crear el div para la gráfica
+                    const grafica = document.createElement('div');
+                    grafica.id = `grafica_principal_${dataMetric["FileId"]}`; // Asignar un ID único para la gráfica
+
+                    // Agregar el video y la gráfica al contenedor de video
+                    videoContainer.appendChild(video);
+                    videoContainer.appendChild(grafica);
+
+                    // Agregar el contenedor de video al contenedor principal
+                    videosRelacionados.appendChild(videoContainer);
+                    createPieChart(dataMetric, grafica.id)
+                };
+
+
             })
             .catch(error => {
                 respuestaGpt.textContent = "Error al comunicarse con el servicio";
                 console.error(error);
             });
         }
-        reproducirBtn.addEventListener('click', () => {
-            const minutoInicio = 2; // Minuto desde el que quieres iniciar (ajusta según sea necesario)
-            video.currentTime = minutoInicio * 60; // Convertir minutos a segundos
-            video.play();
-        });
+        //pathVideo = "\\\\wsl.localhost\\Ubuntu-22.04\\home\\esquezada\\Tesis\\BuscardorVideos_UNIR_TFM\\Videos\\Análisis e Interpretación de Datos\\88730.mp4"
+        //video.src = pathVideo;
+
+
+
+        // Colores para los segmentos
+        const colors = ["#990099", "#ff9900", "#00e600", "#6b486b"]; // Violeta, Naranja, Verde, Morado
+
+        // Función para crear un gráfico circular
+        function createPieChart(dataItem, divId) {
+            // Seleccionar el contenedor principal
+            const mainContainer = document.getElementById(divId);
+
+            // Crear un contenedor para el gráfico con el FileId como ID
+            const chartContainer = document.createElement('div');
+            chartContainer.id = dataItem.FileId; // Asignar el FileId como ID
+            chartContainer.classList.add('chart-container');
+            mainContainer.appendChild(chartContainer);
+
+            // Crear el canvas para el gráfico
+            const canvas = document.createElement('canvas');
+            chartContainer.appendChild(canvas);
+
+            // Crear el div para el texto central
+            const centerText = document.createElement('div');
+            centerText.classList.add('center-text');
+            centerText.innerHTML = `Duración:<br>${(dataItem.Duration / 60).toFixed(1)} min`;
+            chartContainer.appendChild(centerText);
+
+            // Datos para el gráfico circular (convertidos a minutos, excluyendo Duration)
+            const chartData = {
+                labels: ["Transcripción", "Silencio", "Acumulado"],
+                datasets: [{
+                data: [
+                    (dataItem.TotalTranscriptionTime / 60).toFixed(1),
+                    (dataItem.SilenceTime / 60).toFixed(1),
+                    (dataItem.AccumulatedTime / 60).toFixed(1)
+                ],
+                backgroundColor: colors,
+                hoverOffset: 4
+                }]
+            };
+
+            // Opciones del gráfico
+            const chartOptions = {
+                plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                    label: (context) => {
+                        const label = context.label;
+                        const value = context.formattedValue;
+                        return `${label}: ${value} min`;
+                    }
+                    }
+                },
+                datalabels: {
+                    formatter: (value, context) => {
+                    return `${context.chart.data.labels[context.dataIndex]}: ${value} min`;
+                    },
+                    color: 'white'
+                }
+                }
+            };
+
+            // Crear el gráfico circular
+            new Chart(canvas, {
+                type: 'doughnut',
+                data: chartData,
+                options: chartOptions
+            });
+
+            // Título del gráfico (nombre de la carpeta y del archivo)
+            const subtitle = document.createElement('p');
+            subtitle.textContent = dataItem.FolderName;
+            subtitle.classList.add('chart-subtitle');
+            chartContainer.appendChild(subtitle);
+
+            const title = document.createElement('p');
+            title.textContent = dataItem.FileName;
+            title.classList.add('chart-title');
+            chartContainer.appendChild(title);
+            };
     </script>
 </body>
 </html>
