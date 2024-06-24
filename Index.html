@@ -107,7 +107,15 @@
         const video = document.querySelector('#video video');
         const videosRelacionados = document.getElementById('videos_relacionados');
         //const video = document.getElementById('#video_src');
-
+        /*
+        promptInput.innerHTML = '';
+        respuestaGpt.innerHTML = '';
+        referencias.innerHTML = '';
+        keywords.innerHTML = '';
+        consumoTokens.innerHTML = '';
+        video.innerHTML = '';
+        videosRelacionados.innerHTML = '';
+*/
         enviarBtn.addEventListener('click', () => enviarPrompt());
         promptInput.addEventListener('keyup', (event) => {
             if (event.key === 'Enter') {
@@ -135,7 +143,11 @@
                     video.src = pathVideo + data.Response.SubjectName +'\\' +data.Response.VideoName;
                 }
                 if (data.Response.SegundoInicio != '' || data.Response.SegundoInicio != '-' || data.Response.SegundoInicio != 'N/A'){
-                    video.currentTime = parseFloat(data.Response.SegundoInicio);
+                    console.log(data.Response.SegundoInicio);
+                    console.log(parseFloat(data.Response.SegundoInicio));
+                    console.log(parseFloat(data.Response.SegundoInicio) / 60);
+                    console.log(parseInt(parseFloat(data.Response.SegundoInicio) / 60) * 60);
+                    video.currentTime = parseInt(parseFloat(data.Response.SegundoInicio) / 60) * 60;
                 }
 
                 metrics = data.Metrics;
@@ -176,7 +188,7 @@
                     video.width = 400;
                     video.height = 300;
                     video.controls = true;
-                    video.currentTime = candidates[index_relacionado]['StartTimeSeconds']
+                    video.currentTime = parseInt(candidates[index_relacionado]['StartTimeSeconds'] / 60) * 60
                     video.id = `video_src_${dataMetric["FileId"]}`; // Asignar un ID único
 
                     // Crear la fuente de video

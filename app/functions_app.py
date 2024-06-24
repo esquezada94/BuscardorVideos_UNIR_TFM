@@ -8,6 +8,10 @@ from functions.openai_utils import *
 from sentence_transformers import SentenceTransformer
 
 nltk.download('stopwords')
+# Obtener stopwords en español
+stopwords_es = nltk.corpus.stopwords.words('spanish')
+stopword_en = nltk.corpus.stopwords.words('english')
+stopwords = stopwords_es + stopword_en
 model_embedding = SentenceTransformer('paraphrase-MiniLM-L6-v2') 
 collection_mongo_transcription = init_mongodb("Metadata", "Transcription")
 collection_mongo_silences = init_mongodb("Metadata", "Silences")
@@ -37,7 +41,8 @@ def get_best_match(user_query):
 def get_candidates(user_query):
     window = 10
     list_candidates = []
-    query_embedding = model_embedding.encode(user_query).tolist()
+    clean_user_query = ' '.join([i for i in user_query.lower().split(' ') if i not in stopwords])
+    query_embedding = model_embedding.encode(clean_user_query).tolist()
     results_chroma = search_chroma(collection_chroma, None, query_embedding, {}, 5)
     print('=======================================================================')
     print(results_chroma['documents'][0])
@@ -124,7 +129,7 @@ def get_response_gpt(user_query, list_candidates):
                             },
                         "Reference": {
                             "type": "string",
-                            "description": "Contiene la referencia en base al candidato más acorde al query del usuario, debe incluir: nombre de la manteria, video y los segundo convertidos a minutos.", 
+                            "description": "Contiene la referencia en base al candidato más acorde al query del usuario, debe incluir: nombre de la manteria, video y toma en cuenta que el inicio está en segundos y debes convertirlo a minutos.", 
                             },
                         "Keywords": {
                             "type": "string",
@@ -140,7 +145,7 @@ def get_response_gpt(user_query, list_candidates):
                             },
                         "SegundoInicio": {
                             "type": "string",
-                            "description": "Segundos en que inicia en base al candidato más acorde." 
+                            "description": "Segundos en que inicia en base al candidato más acorde que viene del campo StartTimeSeconds." 
                             }
                     },
                     "required": ['UserResponse', 'Reference', 'Keywords', 'SubjectName', 'VideoName', 'SegundoInicio'],
@@ -162,9 +167,6 @@ def get_metrics(arguments, list_candidates):
     for i in list_candidates:
         if i['Video'] not in target_files.keys():
             target_files[i['Video']] = i['Subject']
-
-    # Obtener stopwords en español
-    stopwords = nltk.corpus.stopwords.words('spanish')
 
     # Lista para almacenar los segmentos coincidentes
     matching_segments = []

@@ -1,0 +1,42 @@
+{
+    "Candidates": [
+        {
+            "Resume": "Los autoencoders son una arquitectura independiente que trabaja por su cuenta, mientras que las redes convolucionales generalmente se utilizan para el tratamiento de im\u00e1genes.",
+            "StartTimeSeconds": 2993.74,
+            "Subject": "T\u00e9cnicas de Inteligencia Artificial",
+            "Transcript": "\u00bfEntendido, Andr\u00e9s? Los autoencoders es una arquitectura completamente diferente que puede trabajar por su cuenta. Y las redes convolucionales, las redes convolucionales por lo general te pueden extraer caracter\u00edsticas de otro tipo de datos, pero se utilizan casi siempre para lo que es tratamiento con im\u00e1genes, \u00bfvale?",
+            "Video": "105564.mp4"
+        }
+    ],
+    "Metrics": [
+        {
+            "AccumulatedTime": 156.43999999999932,
+            "Duration": 3234.28,
+            "FileId": "ab12e9de-d7cd-45d4-94c6-e05ef893ee96",
+            "FileName": "96882.mp4",
+            "FolderName": "T\u00e9cnicas de Inteligencia Artificial",
+            "SilenceTime": 111.14000000000033,
+            "TotalTranscriptionTime": 3123.14
+        },
+        {
+            "AccumulatedTime": 153.68000000000012,
+            "Duration": 5493.16,
+            "FileId": "2d0d7fd4-16bd-4768-995b-131b21e03bb1",
+            "FileName": "105564.mp4",
+            "FolderName": "T\u00e9cnicas de Inteligencia Artificial",
+            "SilenceTime": 291.3599999999997,
+            "TotalTranscriptionTime": 5201.8
+        }
+    ],
+    "Response": {
+        "Keywords": "redes convolucionales, capas, neuronas, T\u00e9cnicas de Inteligencia Artificial",
+        "Reference": "T\u00e9cnicas de Inteligencia Artificial - Video: 96882.mp4 - Inicia en: 37 minutos y 12 segundos",
+        "SegundoInicio": "2232.56",
+        "SubjectName": "T\u00e9cnicas de Inteligencia Artificial",
+        "UserResponse": "En la clase de T\u00e9cnicas de Inteligencia Artificial se hace menci\u00f3n a las redes convolucionales y su configuraci\u00f3n en t\u00e9rminos de capas y neuronas.",
+        "VideoName": "96882.mp4"
+    },
+    "UsageCompletion": 598,
+    "UsagePrompt": 1053,
+    "UsageTotal": 1651
+}
