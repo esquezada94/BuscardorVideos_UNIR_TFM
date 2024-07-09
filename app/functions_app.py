@@ -15,19 +15,14 @@ stopwords = stopwords_es + stopword_en
 model_embedding = SentenceTransformer('paraphrase-MiniLM-L6-v2') 
 collection_mongo_transcription = init_mongodb("Metadata", "Transcription")
 collection_mongo_silences = init_mongodb("Metadata", "Silences")
-collection_chroma = init_chroma('databases2','Transcription')
+collection_chroma = init_chroma('databases','Transcription')
 client_openai = init_openai()
 
 def get_best_match(user_query):   
-    print('>>> 1')
     list_candidates = get_candidates(user_query)
-    print('>>> 2')
     tool, arguments, usage = get_response_gpt(user_query, list_candidates)
-    print('>>> 3')
     metrics = get_metrics(arguments, list_candidates)
-    print('>>> 4')
     resume_candidates = get_resume_candidates(list_candidates)
-    print('>>> 5')
     response = {
         "Response": arguments,
         "UsagePrompt": usage.prompt_tokens,

@@ -4,7 +4,6 @@ env/
 Videos/
 Audios/
 databases/
-databases2/
 *.deb
 *.tgz
 *.pyc
