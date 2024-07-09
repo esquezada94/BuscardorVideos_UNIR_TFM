@@ -11,7 +11,7 @@ def hello():
     return "Aplicación para la exploración de videos usando LLMs."
 
 @app.route('/search_video', methods=['POST'])
-def ejemplo_post_json():
+def http_search_video():
     datos = request.get_json()  # Obtiene los datos JSON
     user_query = datos.get('prompt', 'No hay preguntas.') 
     response = get_best_match(user_query) 
